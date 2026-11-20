@@ -1,0 +1,9 @@
+export const DEFAULT_HEAD_BYTES = 64 * 1024;
+export const DEFAULT_TAIL_BYTES = 128 * 1024;
+export const DEFAULT_MAX_READ_BYTES = 2 * 1024 * 1024;
+export const MAX_TEXT_SNIFF_BYTES = 64 * 1024;
+export const MAX_ZIP_DIRECTORY_BYTES = 2 * 1024 * 1024;
+
+export const ZIP_LOCAL_FILE_SIGNATURE = 0x04034b50;
+export const ZIP_CENTRAL_FILE_SIGNATURE = 0x02014b50;
+export const ZIP_END_SIGNATURE = 0x06054b50;

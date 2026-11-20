@@ -1,0 +1,59 @@
+{
+  "name": "xiaodao-filetype-parser",
+  "version": "0.1.0",
+  "description": "Content-based file type detection for Node.js and TypeScript",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "file-type",
+    "filetype",
+    "mime",
+    "magic-bytes",
+    "file-detection",
+    "typescript",
+    "nodejs"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist/",
+    "README.md",
+    "README.ZH.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "check": "npm run build && npm test",
+    "test": "node --import tsx --test test/*.test.ts",
+    "test:example": "node --import tsx examples/detect.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaodaozhi/xiaodao-filetype-parser.git"
+  },
+  "homepage": "https://github.com/xiaodaozhi/xiaodao-filetype-parser#readme",
+  "bugs": {
+    "url": "https://github.com/xiaodaozhi/xiaodao-filetype-parser/issues"
+  }
+}

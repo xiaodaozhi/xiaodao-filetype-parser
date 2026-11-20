@@ -1,0 +1,22 @@
+* text=auto eol=lf
+
+test/fixtures/real/*.docx binary
+test/fixtures/real/*.epub binary
+test/fixtures/real/*.gif binary
+test/fixtures/real/*.gz binary
+test/fixtures/real/*.ipa binary
+test/fixtures/real/*.jar binary
+test/fixtures/real/*.jpg binary
+test/fixtures/real/*.pdf binary
+test/fixtures/real/*.png binary
+test/fixtures/real/*.sqlite binary
+test/fixtures/real/*.tar binary
+test/fixtures/real/*.vsix binary
+test/fixtures/real/*.wasm binary
+test/fixtures/real/*.wav binary
+test/fixtures/real/*.xlsx binary
+test/fixtures/real/*.pptx binary
+
+test/fixtures/real/*.eml text eol=lf
+test/fixtures/real/*.svg text eol=lf
+test/fixtures/real/README.md text eol=lf
