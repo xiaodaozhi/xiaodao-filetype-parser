@@ -159,7 +159,7 @@ The workflow filename is `publish.yml`, including the extension; `Publish` is on
 
 Use a new version for each release: npm does not allow an existing version to be overwritten. Update both `package.json` and `package-lock.json` before creating the matching tag. Provenance is generated automatically when npm's public-repository eligibility requirements are met. See [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers) for the initial package setup and provider requirements.
 
-The separate **GitHub Packages and Release** workflow also runs on version tags. It checks out the tag, validates the version, builds and tests the component, and publishes `@xiaodaozhi/xiaodao-filetype-parser` using the workflow's `GITHUB_TOKEN` with `packages: write`. After publishing succeeds, it creates the corresponding GitHub Release with generated notes, the unscoped and scoped `.tgz` archives, and `SHA256SUMS`. Prerelease versions produce prereleases.
+The separate **GitHub Packages and Release** workflow also runs on version tags. It checks out the tag, validates the version, builds and tests the component, and publishes `@xiaodaozhi/xiaodao-filetype-parser` using the workflow's `GITHUB_TOKEN` with `packages: write`. It then installs the published package in a clean consumer directory and checks its ESM API against real format samples. After verification succeeds, it creates the corresponding GitHub Release with generated notes, the unscoped and scoped `.tgz` archives, and `SHA256SUMS`. Prerelease versions produce prereleases.
 
 To publish an existing tag to GitHub Packages and create its Release without republishing to npmjs.org, run this workflow from `main` with the `tag` input:
 
