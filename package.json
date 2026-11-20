@@ -7,9 +7,17 @@
   "keywords": [
     "file-type",
     "filetype",
+    "file-type-detection",
+    "content-based",
     "mime",
+    "mime-type",
     "magic-bytes",
+    "magic-number",
+    "file-signature",
     "file-detection",
+    "format-detection",
+    "binary-file",
+    "buffer",
     "typescript",
     "nodejs"
   ],
