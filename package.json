@@ -32,7 +32,7 @@
   "scripts": {
     "build": "tsc",
     "check": "npm run build && npm test",
-    "test": "node --import tsx --test test/*.test.ts",
+    "test": "node test/run-tests.mjs",
     "test:example": "node --import tsx examples/detect.ts",
     "pack:check": "npm pack --dry-run",
     "prepack": "npm run build",
