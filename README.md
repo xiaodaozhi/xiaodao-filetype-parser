@@ -18,6 +18,14 @@ npm install xiaodao-filetype-parser
 
 Node.js 20 or later is required. The package is published as an ES module.
 
+The same component is also available from GitHub Packages under the scoped name `@xiaodaozhi/xiaodao-filetype-parser`:
+
+```bash
+npm install @xiaodaozhi/xiaodao-filetype-parser --registry=https://npm.pkg.github.com/
+```
+
+GitHub Packages requires authentication with a GitHub token that has `read:packages`. Use the scoped package name in imports when installing from this registry. [GitHub Releases](https://github.com/xiaodaozhi/xiaodao-filetype-parser/releases) provide both package archives and SHA-256 checksums for downloading directly.
+
 ## Quick start
 
 ```typescript
@@ -150,6 +158,16 @@ Configure the package's Trusted Publisher in its npm settings before releasing:
 The workflow filename is `publish.yml`, including the extension; `Publish` is only the workflow's display name. A connection marked **Pending validation** is validated by its first successful trusted publish. If publishing returns `E404` or `ENEEDAUTH`, verify the package exists and that these settings and the publish permission match. A `0.0.0-stage` placeholder does not mean a release has been published.
 
 Use a new version for each release: npm does not allow an existing version to be overwritten. Update both `package.json` and `package-lock.json` before creating the matching tag. Provenance is generated automatically when npm's public-repository eligibility requirements are met. See [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers) for the initial package setup and provider requirements.
+
+The separate **GitHub Packages and Release** workflow also runs on version tags. It checks out the tag, validates the version, builds and tests the component, and publishes `@xiaodaozhi/xiaodao-filetype-parser` using the workflow's `GITHUB_TOKEN` with `packages: write`. After publishing succeeds, it creates the corresponding GitHub Release with generated notes, the unscoped and scoped `.tgz` archives, and `SHA256SUMS`. Prerelease versions produce prereleases.
+
+To publish an existing tag to GitHub Packages and create its Release without republishing to npmjs.org, run this workflow from `main` with the `tag` input:
+
+```bash
+gh workflow run github-packages.yml --ref main -f tag=v0.1.1
+```
+
+Rerunning verifies the integrity of an existing GitHub Packages version before updating Release assets; it refuses to overwrite a package with different contents. The repository's Actions settings must allow package creation. No additional package token is required in repository secrets.
 
 ## License
 

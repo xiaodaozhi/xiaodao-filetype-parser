@@ -14,6 +14,14 @@ npm install xiaodao-filetype-parser
 
 需要 Node.js 20 或更高版本。包以 ES Module 形式发布。
 
+GitHub Packages 同时提供作用域包 `@xiaodaozhi/xiaodao-filetype-parser`：
+
+```bash
+npm install @xiaodaozhi/xiaodao-filetype-parser --registry=https://npm.pkg.github.com/
+```
+
+GitHub Packages 要求使用具有 `read:packages` 权限的 GitHub token 认证。从该仓库安装时，代码导入也应使用作用域包名。[GitHub Releases](https://github.com/xiaodaozhi/xiaodao-filetype-parser/releases) 还提供两个包的安装压缩包及 SHA-256 校验文件，可直接下载。
+
 ## 快速开始
 
 ```typescript
@@ -146,6 +154,16 @@ git push origin v0.1.1
 工作流文件名必须填写包含扩展名的 `publish.yml`；`Publish` 只是工作流的显示名称。状态为 **Pending validation** 的连接会在首次成功通过可信发布后完成验证。如果发布返回 `E404` 或 `ENEEDAUTH`，请核对包是否存在，以及上述配置和发布权限是否匹配。`0.0.0-stage` 占位包不代表正式版本已经发布。
 
 每次发布都应使用新版本，npm 不允许覆盖已有版本。创建匹配的标签前，请同步更新 `package.json` 和 `package-lock.json`。满足 npm 的公开仓库条件时，provenance 会自动生成。首次创建包和发布平台的要求，请参阅 [npm Trusted Publishing 文档](https://docs.npmjs.com/trusted-publishers)。
+
+独立的 **GitHub Packages and Release** 工作流也会在推送版本标签时运行。它检出对应标签、校验版本、构建并测试组件，然后使用具有 `packages: write` 权限的工作流 `GITHUB_TOKEN` 发布 `@xiaodaozhi/xiaodao-filetype-parser`。发布成功后会创建对应的 GitHub Release，包含自动生成的发布说明、无作用域和有作用域的两个 `.tgz` 安装包，以及 `SHA256SUMS`。预发布版本会创建为 prerelease。
+
+如需为已有标签补发 GitHub Packages 并创建 Release，可从 `main` 手动运行工作流并传入 `tag`，无需重新发布到 npmjs.org：
+
+```bash
+gh workflow run github-packages.yml --ref main -f tag=v0.1.1
+```
+
+重复运行时会先校验 GitHub Packages 已有版本的完整性，再更新 Release 附件；若同版本的包内容不同则拒绝发布。仓库的 Actions 设置需要允许创建包，无需在仓库 secrets 中另外保存包发布 token。
 
 ## 许可证
 

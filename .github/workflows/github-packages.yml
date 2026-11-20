@@ -1,0 +1,153 @@
+name: GitHub Packages and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing version tag to publish, for example v0.1.1'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-packages-publish
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+
+jobs:
+  publish:
+    name: Publish to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      prerelease: ${{ steps.package.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: refs/tags/${{ inputs.tag || github.ref_name }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://npm.pkg.github.com/
+          scope: '@${{ github.repository_owner }}'
+          cache: npm
+
+      # Also validates older tags whose release script only reads GITHUB_REF.
+      - name: Verify selected tag matches package.json
+        run: env GITHUB_REF="refs/tags/$RELEASE_TAG" npm run release:check
+
+      - run: npm ci
+      - run: npm run check
+      - run: npm run pack:check
+
+      - name: Pack npmjs.org archive
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-assets"
+          npm pack --pack-destination "$RUNNER_TEMP/release-assets"
+
+      # Only the runner's manifest is renamed; npmjs.org keeps the unscoped name.
+      - name: Prepare GitHub Packages manifest
+        run: |
+          npm pkg set "name=@${GITHUB_REPOSITORY_OWNER,,}/xiaodao-filetype-parser"
+          npm pkg set publishConfig.registry=https://npm.pkg.github.com/
+          npm run pack:check
+
+      - name: Pack GitHub Packages archive
+        id: package
+        run: |
+          npm pack --pack-destination "$RUNNER_TEMP/release-assets" --json > "$RUNNER_TEMP/github-package.json"
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          const [packed] = JSON.parse(readFileSync(`${process.env.RUNNER_TEMP}/github-package.json`, 'utf8'));
+          appendFileSync(process.env.GITHUB_OUTPUT, `prerelease=${packed.version.split('+')[0].includes('-')}\n`);
+          NODE
+
+      - name: Publish archive or verify existing version
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import { spawnSync } from 'node:child_process';
+          const registry = 'https://npm.pkg.github.com/';
+          const [packed] = JSON.parse(readFileSync(`${process.env.RUNNER_TEMP}/github-package.json`, 'utf8'));
+          const spec = `${packed.name}@${packed.version}`;
+          const result = spawnSync('npm', ['view', spec, '--json', `--registry=${registry}`], { encoding: 'utf8' });
+          if (result.error) throw result.error;
+          if (result.status === 0) {
+            const report = JSON.parse(result.stdout);
+            const existing = Array.isArray(report) ? report[0] : report;
+            if (existing.dist?.integrity !== packed.integrity) {
+              throw new Error(`${spec} already exists with different package contents.`);
+            }
+            console.log(`${spec} already published with matching integrity.`);
+          } else {
+            let report;
+            try { report = JSON.parse(result.stdout); } catch { /* Preserve npm's error below. */ }
+            if (report?.error?.code !== 'E404') {
+              process.stderr.write(result.stderr || result.stdout);
+              process.exit(result.status ?? 1);
+            }
+            const published = spawnSync('npm', [
+              'publish', `${process.env.RUNNER_TEMP}/release-assets/${packed.filename}`,
+              '--access=public', `--registry=${registry}`,
+            ], { stdio: 'inherit' });
+            if (published.error) throw published.error;
+            if (published.status !== 0) process.exit(published.status ?? 1);
+          }
+          NODE
+
+      - name: Generate release checksums
+        working-directory: ${{ runner.temp }}/release-assets
+        run: sha256sum ./*.tgz > SHA256SUMS
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: release-packages
+          path: ${{ runner.temp }}/release-assets/
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Create GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: release-packages
+          path: release-assets
+
+      - name: Verify release checksums
+        working-directory: release-assets
+        run: sha256sum --check SHA256SUMS
+
+      - name: Create release and attach packages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IS_PRERELEASE: ${{ needs.publish.outputs.prerelease }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release-assets/* --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            flags=()
+            if [[ "$IS_PRERELEASE" == 'true' ]]; then
+              flags+=(--prerelease)
+            fi
+            gh release create "$RELEASE_TAG" release-assets/* \
+              --repo "$GITHUB_REPOSITORY" --verify-tag \
+              --title "$RELEASE_TAG" --generate-notes "${flags[@]}"
+          fi
