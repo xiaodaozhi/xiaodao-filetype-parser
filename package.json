@@ -1,6 +1,6 @@
 {
   "name": "xiaodao-filetype-parser",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Content-based file type detection for Node.js and TypeScript",
   "type": "module",
   "license": "MIT",

@@ -19,13 +19,14 @@ jobs:
     name: Publish to npmjs.org
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org/
           cache: npm
+
+      - run: npm run release:check
 
       - name: Verify npm Trusted Publishing support
         shell: bash
@@ -36,9 +37,17 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run pack:check
-      - run: npm run release:check
+
+      - name: Verify GitHub OIDC availability
+        shell: bash
+        run: |
+          if [[ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" || -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]]; then
+            echo '::error::GitHub OIDC is unavailable. The publish job requires id-token: write.'
+            exit 1
+          fi
 
       # npm obtains a short-lived publish credential from GitHub's OIDC token.
-      # No long-lived npm token is configured in this workflow.
+      # Do not configure registry-url or NODE_AUTH_TOKEN: setup-node's placeholder
+      # credential can hide a failed OIDC exchange behind a registry E404.
       - name: Publish to npmjs.org with OIDC Trusted Publishing
         run: npm publish --access public

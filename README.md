@@ -134,7 +134,22 @@ git tag v0.1.1
 git push origin v0.1.1
 ```
 
-The publish workflow installs from the lockfile, runs `npm run check`, verifies the package contents, checks the tag version, and publishes to npm through GitHub OIDC and npm Trusted Publishing without a long-lived npm token. Configure the package's trusted publisher for repository `xiaodaozhi/xiaodao-filetype-parser` and workflow `Publish` before releasing. npm requires the package to exist before its trusted publisher connection can be configured; provenance is generated automatically when npm's public-repository eligibility requirements are met.
+The publish workflow checks the tag version, installs from the lockfile, runs `npm run check`, verifies the package contents, and publishes to npm through GitHub OIDC and npm Trusted Publishing without a long-lived npm token.
+
+Configure the package's Trusted Publisher in its npm settings before releasing:
+
+| Setting | Value |
+| --- | --- |
+| Provider | GitHub Actions |
+| Organization or user | `xiaodaozhi` |
+| Repository | `xiaodao-filetype-parser` |
+| Workflow filename | `publish.yml` |
+| Environment | Leave empty |
+| Permission | Allow `npm publish` |
+
+The workflow filename is `publish.yml`, including the extension; `Publish` is only the workflow's display name. A connection marked **Pending validation** is validated by its first successful trusted publish. If publishing returns `E404` or `ENEEDAUTH`, verify the package exists and that these settings and the publish permission match. A `0.0.0-stage` placeholder does not mean a release has been published.
+
+Use a new version for each release: npm does not allow an existing version to be overwritten. Update both `package.json` and `package-lock.json` before creating the matching tag. Provenance is generated automatically when npm's public-repository eligibility requirements are met. See [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers) for the initial package setup and provider requirements.
 
 ## License
 

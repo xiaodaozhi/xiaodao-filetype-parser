@@ -130,7 +130,22 @@ git tag v0.1.1
 git push origin v0.1.1
 ```
 
-发布工作流会从 lockfile 安装依赖，执行 `npm run check`，检查 npm 包内容，校验标签版本，并通过 GitHub OIDC 和 npm Trusted Publishing 发布到 npm，不保存长期 npm token。首次发布前，需要在 npm 包设置中为 `xiaodaozhi/xiaodao-filetype-parser` 仓库的 `Publish` 工作流配置可信发布者；npm 要求包先存在，才能配置 Trusted Publisher。满足 npm 的公开仓库条件时，provenance 会由 Trusted Publishing 自动生成。
+发布工作流会先校验标签版本，从 lockfile 安装依赖，执行 `npm run check`，检查 npm 包内容，并通过 GitHub OIDC 和 npm Trusted Publishing 发布到 npm，不保存长期 npm token。
+
+发布前，请在 npm 包设置中配置 Trusted Publisher：
+
+| 配置项 | 值 |
+| --- | --- |
+| Provider | GitHub Actions |
+| Organization or user | `xiaodaozhi` |
+| Repository | `xiaodao-filetype-parser` |
+| Workflow filename | `publish.yml` |
+| Environment | 留空 |
+| Permission | 允许 `npm publish` |
+
+工作流文件名必须填写包含扩展名的 `publish.yml`；`Publish` 只是工作流的显示名称。状态为 **Pending validation** 的连接会在首次成功通过可信发布后完成验证。如果发布返回 `E404` 或 `ENEEDAUTH`，请核对包是否存在，以及上述配置和发布权限是否匹配。`0.0.0-stage` 占位包不代表正式版本已经发布。
+
+每次发布都应使用新版本，npm 不允许覆盖已有版本。创建匹配的标签前，请同步更新 `package.json` 和 `package-lock.json`。满足 npm 的公开仓库条件时，provenance 会自动生成。首次创建包和发布平台的要求，请参阅 [npm Trusted Publishing 文档](https://docs.npmjs.com/trusted-publishers)。
 
 ## 许可证
 
