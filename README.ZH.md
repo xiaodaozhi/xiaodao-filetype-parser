@@ -103,7 +103,7 @@ console.log(result.diagnostics);
 
 ## 支持格式
 
-首版覆盖常见图片、音频、视频、文档、文本、归档、Office ZIP/OLE 容器、字体和可执行文件，包括 PNG、JPEG、GIF、WebP、BMP、TIFF、AVIF、HEIF、SVG、MP3、M4A、WAV、FLAC、OGG、MP4、MOV、WebM、AVI、PDF、RTF、XML、JSON、EML、JavaScript、TypeScript、Python、YAML、ZIP、DOCX、XLSX、PPTX、ODT、ODS、ODP、EPUB、JAR、APK、IPA、VSIX、OLE、DOC、XLS、PPT、GZIP、BZIP2、XZ、7z、RAR、TAR、Debian、RPM、SQLite、ELF、PE、Mach-O、Java Class、DEX、WebAssembly、TTF、OTF、WOFF 和 WOFF2。
+首版覆盖常见图片、音频、视频、文档、文本、归档、Office ZIP/OLE 容器、字体和可执行文件，包括 PNG、JPEG、GIF、WebP、BMP、TIFF、JPEG 2000、AVIF、HEIF、SVG、MP3、AAC、M4A、MIDI、WAV、FLAC、OGG、MP4、MOV、3GPP、MPEG、WebM、AVI、SWF、PDF、PostScript、RTF、XML、JSON、glTF、CSV、INI、EML、JavaScript、TypeScript、Python、YAML、ZIP、DOCX、XLSX、PPTX、ODT、ODS、ODP、EPUB、JAR、APK、IPA、VSIX、MOBI、OLE、DOC、XLS、PPT、二进制 plist、GZIP、BZIP2、XZ、7z、RAR、TAR、Debian、RPM、SQLite、ELF、PE、Mach-O、Java Class、DEX、WebAssembly、TTF、OTF、WOFF 和 WOFF2。
 
 无需读取文件也可以查询扩展名映射。`getFormatByExtension()` 接受不区分大小写、带点或不带点的扩展名，并返回标准类型和完整格式元数据。
 

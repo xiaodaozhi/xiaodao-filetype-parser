@@ -69,7 +69,7 @@ function textContentCandidate(data: Buffer, fileName: string | undefined): Candi
 
   const utf8 = isUtf8(data);
   const encoding = utf8 ? 'utf-8' : 'latin1';
-  const text = data.toString(utf8 ? 'utf8' : 'latin1').replace(/^\uFEFF/, '').trimStart();
+  const text = data.toString(utf8 ? 'utf8' : 'latin1').replace(/^\uFEFF/, '').trim();
   const lower = text.toLowerCase();
 
   if (lower.startsWith('#!')) {
@@ -79,6 +79,9 @@ function textContentCandidate(data: Buffer, fileName: string | undefined): Candi
   }
   if (lower.startsWith('<?php') || lower.includes('wscript.') || lower.includes('createobject(')) {
     return makeCandidate('text', 0.8, false, 'text', 'script-marker', 'Text contains a recognizable script marker', null, { encoding });
+  }
+  if (text.startsWith('%!PS-Adobe-')) {
+    return makeCandidate('postscript', 0.9, true, 'text', 'postscript-header', 'Text contains a PostScript header', 0, { encoding });
   }
   if (lower.startsWith('<svg') || lower.includes('<svg ')) {
     return makeCandidate('svg', 0.92, true, 'text', 'svg-structure', 'Text contains an SVG root element', null, { encoding });
@@ -91,7 +94,10 @@ function textContentCandidate(data: Buffer, fileName: string | undefined): Candi
   }
   if ((text.startsWith('{') && text.endsWith('}')) || (text.startsWith('[') && text.endsWith(']'))) {
     try {
-      JSON.parse(text);
+      const parsed: unknown = JSON.parse(text);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && 'asset' in parsed) {
+        return makeCandidate('gltf', 0.9, true, 'text', 'gltf-json', 'JSON contains a glTF asset object', null, { encoding });
+      }
       return makeCandidate('json', 0.9, true, 'text', 'json-parse', 'Text parses as JSON', null, { encoding });
     } catch {
       // Continue to the lower-confidence plain-text result.
@@ -101,6 +107,17 @@ function textContentCandidate(data: Buffer, fileName: string | undefined): Candi
   const knownHeader = /^(from|to|subject|date|mime-version|content-type|message-id):\s/i;
   if (headerLines.some(line => knownHeader.test(line)) && (/\r?\n\r?\n/.test(text) || headerLines.length <= 4)) {
     return makeCandidate('eml', 0.84, true, 'text', 'rfc5322-header', 'Text contains RFC 5322/MIME headers', null, { encoding });
+  }
+  const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  if (lines.length >= 2) {
+    const delimiterCount = (line: string): number => line.split(',').length - 1;
+    const csvDelimiterCount = delimiterCount(lines[0]);
+    if (csvDelimiterCount > 0 && lines.every(line => delimiterCount(line) === csvDelimiterCount)) {
+      return makeCandidate('csv', 0.78, false, 'text', 'csv-rows', 'Text has consistent comma-separated rows', null, { encoding });
+    }
+    if (/^\[[^\]\r\n]+\]$/.test(lines[0]) && lines.some(line => /^[^=\r\n]+\s*=/.test(line))) {
+      return makeCandidate('ini', 0.78, false, 'text', 'ini-section', 'Text has an INI section and key-value entries', null, { encoding });
+    }
   }
   const hint = extensionHint(fileName);
   if (hint) return { ...hint, encoding };

@@ -18,6 +18,11 @@ describe('format metadata', () => {
     assert.equal(getFormatByExtension('.DOCX')?.type, 'docx');
     assert.equal(getFormatByExtension('JpEg')?.definition.mimeType, 'image/jpeg');
     assert.equal(getFormatByExtension('m4a')?.type, 'm4a');
+    assert.equal(getFormatByExtension('3G2')?.type, '3gp');
+    assert.equal(getFormatByExtension('.AZW3')?.type, 'mobi');
+    assert.equal(getFormatByExtension('j2k')?.definition.mimeType, 'image/jp2');
+    assert.equal(getFormatByExtension('CFG')?.type, 'ini');
+    assert.equal(getFormatByExtension('.EPS')?.type, 'postscript');
     assert.equal(getFormatByExtension('unknown-extension'), null);
   });
 });

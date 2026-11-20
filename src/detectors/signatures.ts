@@ -48,6 +48,7 @@ export const signatureDetector: Detector = ({ source }) => {
   if (hasAscii(data, 0, 'fLaC')) return makeCandidate('flac', 0.99, true, 'signature', 'flac-signature', 'FLAC marker');
   if (hasAscii(data, 0, 'OggS')) return makeCandidate('ogg', 0.98, true, 'signature', 'ogg-signature', 'Ogg page marker');
   if (hasAscii(data, 0, 'MThd')) return makeCandidate('midi', 0.99, true, 'signature', 'midi-signature', 'MIDI header');
+  if (data.length >= 2 && data[0] === 0xff && (data[1] & 0xf6) === 0xf0) return makeCandidate('aac', 0.9, true, 'signature', 'aac-adts', 'AAC ADTS frame header');
   if (hasAscii(data, 0, 'ID3') || hasBytes(data, 0, [0xff, 0xfb]) || hasBytes(data, 0, [0xff, 0xf3]) || hasBytes(data, 0, [0xff, 0xf2])) {
     return makeCandidate('mp3', 0.94, true, 'signature', 'mp3-signature', 'MP3 ID3 tag or frame sync');
   }
@@ -71,10 +72,14 @@ export const signatureDetector: Detector = ({ source }) => {
   if (hasAscii(data, 0, 'xar!')) return makeCandidate('xar', 0.98, true, 'signature', 'xar-signature', 'XAR archive header');
   if (hasBytes(data, 0, [0xed, 0xab, 0xee, 0xdb])) return makeCandidate('rpm', 0.98, true, 'signature', 'rpm-signature', 'RPM package header');
   if (hasBytes(data, 0, [0x78, 0x9f, 0x3e, 0x22])) return makeCandidate('tnef', 0.98, true, 'signature', 'tnef-signature', 'TNEF header');
+  if (hasBytes(data, 0, [0x00, 0x00, 0x00, 0x0c, 0x6a, 0x50, 0x20, 0x20, 0x0d, 0x0a, 0x87, 0x0a])) return makeCandidate('jp2', 0.99, true, 'signature', 'jp2-signature', 'JPEG 2000 signature box');
   if (hasAscii(data, 0, '8BPS')) return makeCandidate('psd', 0.98, true, 'signature', 'psd-signature', 'Photoshop document header');
   if (hasAscii(data, 0, 'SQLite format 3\0')) return makeCandidate('sqlite', 0.99, true, 'signature', 'sqlite-signature', 'SQLite 3 database header');
   if (hasAscii(data, 0, 'PAR1')) return makeCandidate('parquet', 0.9, false, 'signature', 'parquet-header', 'Apache Parquet magic header');
   if (hasAscii(data, 0, 'Cr24')) return makeCandidate('crx', 0.98, true, 'signature', 'crx-signature', 'Chrome extension package header');
+  if (hasAscii(data, 0, 'glTF')) return makeCandidate('glb', 0.99, true, 'signature', 'glb-signature', 'Binary glTF header');
+  if (hasAscii(data, 0, 'bplist00')) return makeCandidate('plist', 0.98, true, 'signature', 'binary-plist-signature', 'Binary property list header');
+  if (data.length >= 68 && hasAscii(data, 60, 'BOOKMOBI')) return makeCandidate('mobi', 0.95, true, 'signature', 'mobi-bookmobi', 'Mobipocket BOOKMOBI marker', 60);
   if (hasBytes(data, 0, [0x7f, 0x45, 0x4c, 0x46])) return makeCandidate('elf', 0.99, true, 'signature', 'elf-signature', 'ELF header');
   if (hasBytes(data, 0, [0xca, 0xfe, 0xba, 0xbe])) {
     const architectureCount = u32be(data, 4);
@@ -98,6 +103,7 @@ export const signatureDetector: Detector = ({ source }) => {
   }
   if (hasAscii(data, 0, '%PDF-')) return makeCandidate('pdf', 0.99, true, 'signature', 'pdf-header', 'PDF header');
   if (hasAscii(data, 0, '{\\rtf')) return makeCandidate('rtf', 0.98, true, 'signature', 'rtf-header', 'RTF header');
+  if (hasBytes(data, 0, [0x00, 0x00, 0x01, 0xba]) || hasBytes(data, 0, [0x00, 0x00, 0x01, 0xb3])) return makeCandidate('mpeg', 0.9, true, 'signature', 'mpeg-start-code', 'MPEG start code');
   if (hasBytes(data, 0, CFB_SIGNATURE)) return makeCandidate('ole', 0.99, true, 'signature', 'ole-signature', 'Compound File Binary signature');
   if (hasAscii(data, 0, 'PK\x03\x04') || hasAscii(data, 0, 'PK\x05\x06') || hasAscii(data, 0, 'PK\x07\x08')) return makeCandidate('zip', 0.99, true, 'signature', 'zip-signature', 'ZIP local header, empty archive, or data descriptor');
 
@@ -114,6 +120,7 @@ export const signatureDetector: Detector = ({ source }) => {
   }
   if (hasAscii(data, 4, 'ftyp') && data.length >= 12) {
     const brand = data.subarray(8, 12).toString('ascii');
+    if (brand.startsWith('3g')) return makeCandidate('3gp', 0.96, true, 'signature', '3gpp-ftyp', 'ISO base media container with a 3GPP brand');
     if (['heic', 'heix', 'hevc', 'hevx', 'mif1'].includes(brand)) return makeCandidate('heif', 0.98, true, 'signature', 'heif-ftyp', 'ISO base media container with an HEIF brand');
     if (brand === 'M4A ' || brand === 'M4B ') return makeCandidate('m4a', 0.96, true, 'signature', 'm4a-ftyp', 'ISO base media container with an MPEG-4 audio brand');
     if (brand === 'qt  ') return makeCandidate('mov', 0.97, true, 'signature', 'quicktime-ftyp', 'QuickTime media container');

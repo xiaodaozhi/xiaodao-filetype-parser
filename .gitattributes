@@ -1,15 +1,23 @@
 * text=auto eol=lf
 
+test/fixtures/real/*.3gp binary
+test/fixtures/real/*.aac binary
 test/fixtures/real/*.docx binary
 test/fixtures/real/*.epub binary
 test/fixtures/real/*.gif binary
+test/fixtures/real/*.glb binary
 test/fixtures/real/*.gz binary
 test/fixtures/real/*.ipa binary
 test/fixtures/real/*.jar binary
 test/fixtures/real/*.jpg binary
+test/fixtures/real/*.jp2 binary
+test/fixtures/real/*.mobi binary
+test/fixtures/real/*.mpeg binary
 test/fixtures/real/*.pdf binary
+test/fixtures/real/*.plist binary
 test/fixtures/real/*.png binary
 test/fixtures/real/*.sqlite binary
+test/fixtures/real/*.swf binary
 test/fixtures/real/*.tar binary
 test/fixtures/real/*.vsix binary
 test/fixtures/real/*.wasm binary

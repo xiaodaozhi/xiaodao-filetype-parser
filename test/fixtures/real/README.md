@@ -11,5 +11,7 @@ These files are small, self-contained fixtures used by the integration tests. Th
 - `sample.sqlite` is created by Python's standard SQLite implementation and contains one table and one row;
 - `sample.wasm` is the valid empty WebAssembly module;
 - SVG and EML fixtures are complete text documents.
+- CSV, INI, PostScript, and glTF fixtures are complete text documents, while the GLB and binary property-list fixtures are valid compact binary documents.
+- 3GPP, AAC, JPEG 2000, MOBI, MPEG, and SWF fixtures contain the corresponding format signatures and compact header structures used for content detection.
 
 The tests pass an unrelated filename to the buffer API so the expected results come from file contents and container structure.

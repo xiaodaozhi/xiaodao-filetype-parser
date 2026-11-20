@@ -107,7 +107,7 @@ If an outer type can be identified but a container cannot be fully refined, the 
 
 ## Supported formats
 
-The first release covers common images, audio and video files, documents, text formats, archives, Office ZIP/OLE containers, fonts, and executable formats, including PNG, JPEG, GIF, WebP, BMP, TIFF, AVIF, HEIF, SVG, MP3, M4A, WAV, FLAC, OGG, MP4, MOV, WebM, AVI, PDF, RTF, XML, JSON, EML, JavaScript, TypeScript, Python, YAML, ZIP, DOCX, XLSX, PPTX, ODT, ODS, ODP, EPUB, JAR, APK, IPA, VSIX, OLE, DOC, XLS, PPT, GZIP, BZIP2, XZ, 7z, RAR, TAR, Debian, RPM, SQLite, ELF, PE, Mach-O, Java Class, DEX, WebAssembly, TTF, OTF, WOFF, and WOFF2.
+The first release covers common images, audio and video files, documents, text formats, archives, Office ZIP/OLE containers, fonts, and executable formats, including PNG, JPEG, GIF, WebP, BMP, TIFF, JPEG 2000, AVIF, HEIF, SVG, MP3, AAC, M4A, MIDI, WAV, FLAC, OGG, MP4, MOV, 3GPP, MPEG, WebM, AVI, SWF, PDF, PostScript, RTF, XML, JSON, glTF, CSV, INI, EML, JavaScript, TypeScript, Python, YAML, ZIP, DOCX, XLSX, PPTX, ODT, ODS, ODP, EPUB, JAR, APK, IPA, VSIX, MOBI, OLE, DOC, XLS, PPT, binary plist, GZIP, BZIP2, XZ, 7z, RAR, TAR, Debian, RPM, SQLite, ELF, PE, Mach-O, Java Class, DEX, WebAssembly, TTF, OTF, WOFF, and WOFF2.
 
 Extension mappings are also available without reading a file. `getFormatByExtension()` accepts a case-insensitive extension with or without a leading dot and returns the canonical type and full format metadata.
 
