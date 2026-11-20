@@ -1,10 +1,16 @@
 # xiaodao-filetype-parser
 
-一个基于文件内容识别类型的 Node.js + TypeScript 组件。组件采用纯 TypeScript ESM 实现，不依赖系统 `libmagic`、原生 DLL、外部命令或解压工具。
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![License](https://img.shields.io/npm/l/xiaodao-filetype-parser)](LICENSE)
 
 [English](README.md) | 简体中文
 
-识别结果包含稳定类型标识、MIME、扩展名、类别、编码、置信度、权威性、识别信号和有界读取诊断，适合上传校验、附件处理和文件扫描流程。
+`xiaodao-filetype-parser` 根据文件内容识别文件类型。它是一个纯 TypeScript ESM Node.js 包，不依赖运行时 `libmagic`、原生 DLL、外部命令或解压工具。
+
+检测器会返回包含稳定类型标识、MIME 类型、扩展名、类别、编码、置信度、权威性、可解释识别信号和有界读取诊断的结构化结果。
+
+这使组件适合用于上传校验、附件处理和文件扫描流程。
 
 ## 安装
 
