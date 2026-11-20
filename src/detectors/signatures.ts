@@ -75,7 +75,13 @@ export const signatureDetector: Detector = ({ source }) => {
   if (hasBytes(data, 0, [0x00, 0x00, 0x00, 0x0c, 0x6a, 0x50, 0x20, 0x20, 0x0d, 0x0a, 0x87, 0x0a])) return makeCandidate('jp2', 0.99, true, 'signature', 'jp2-signature', 'JPEG 2000 signature box');
   if (hasAscii(data, 0, '8BPS')) return makeCandidate('psd', 0.98, true, 'signature', 'psd-signature', 'Photoshop document header');
   if (hasAscii(data, 0, 'SQLite format 3\0')) return makeCandidate('sqlite', 0.99, true, 'signature', 'sqlite-signature', 'SQLite 3 database header');
-  if (hasAscii(data, 0, 'PAR1')) return makeCandidate('parquet', 0.9, false, 'signature', 'parquet-header', 'Apache Parquet magic header');
+  if (hasAscii(data, 0, 'PAR1')) {
+    const footerOffset = source.size - 4;
+    const hasFooter = footerOffset >= 4 && hasAscii(source.read(footerOffset, 4), 0, 'PAR1');
+    return hasFooter
+      ? makeCandidate('parquet', 0.99, true, 'signature', 'parquet-header-footer', 'Apache Parquet magic header and footer', footerOffset)
+      : makeCandidate('parquet', 0.9, false, 'signature', 'parquet-header', 'Apache Parquet magic header without a readable footer');
+  }
   if (hasAscii(data, 0, 'Cr24')) return makeCandidate('crx', 0.98, true, 'signature', 'crx-signature', 'Chrome extension package header');
   if (hasAscii(data, 0, 'glTF')) return makeCandidate('glb', 0.99, true, 'signature', 'glb-signature', 'Binary glTF header');
   if (hasAscii(data, 0, 'bplist00')) return makeCandidate('plist', 0.98, true, 'signature', 'binary-plist-signature', 'Binary property list header');

@@ -36,6 +36,18 @@ describe('file type parser', () => {
     assert.equal(result.authoritative, true);
   });
 
+  it('requires a Parquet footer for an authoritative Parquet result', () => {
+    const complete = detect(Buffer.from('PAR1metadataPAR1'));
+    assert.equal(complete.type, 'parquet');
+    assert.equal(complete.authoritative, true);
+    assert.equal(complete.signals[0]?.ruleId, 'parquet-header-footer');
+
+    const headerOnly = detect(Buffer.from('PAR1metadata'));
+    assert.equal(headerOnly.type, 'parquet');
+    assert.equal(headerOnly.authoritative, false);
+    assert.equal(headerOnly.signals[0]?.ruleId, 'parquet-header');
+  });
+
   it('uses the file name only as a weak text hint', () => {
     const result = detect(Buffer.from('const answer = 42;\n'), { fileName: 'answer.js' });
     assert.equal(result.type, 'javascript');

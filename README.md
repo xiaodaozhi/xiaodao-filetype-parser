@@ -120,9 +120,21 @@ npm ci
 npm run build
 npm test
 npm run check
+npm run pack:check
 ```
 
 The implementation is organized around a common byte-source abstraction. Buffer input is available synchronously. File paths use positional reads with a bounded cache, so detectors can share signature and container logic without depending on the input medium.
+
+## Release
+
+Create a Git tag whose version matches `package.json`, then push the tag:
+
+```bash
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+The publish workflow installs from the lockfile, runs `npm run check`, verifies the package contents, checks the tag version, and publishes to npm with trusted publishing and provenance. Configure the npm package's trusted publisher for this repository and the `Publish` workflow before pushing a release tag.
 
 ## License
 

@@ -23,6 +23,8 @@ describe('format metadata', () => {
     assert.equal(getFormatByExtension('j2k')?.definition.mimeType, 'image/jp2');
     assert.equal(getFormatByExtension('CFG')?.type, 'ini');
     assert.equal(getFormatByExtension('.EPS')?.type, 'postscript');
+    assert.equal(getFormatByExtension('ODT')?.type, 'odt');
+    assert.equal(getFormatByExtension('.PARQUET')?.definition.mimeType, 'application/vnd.apache.parquet');
     assert.equal(getFormatByExtension('unknown-extension'), null);
   });
 });

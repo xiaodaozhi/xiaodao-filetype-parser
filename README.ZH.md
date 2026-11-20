@@ -116,9 +116,21 @@ npm ci
 npm run build
 npm test
 npm run check
+npm run pack:check
 ```
 
 实现通过统一的字节源抽象连接内存输入和文件路径输入。`Buffer` 入口同步执行；文件路径入口使用带读取预算的定位读取，因此签名检测和容器检测可以共享同一套逻辑。
+
+## 发布
+
+发布时应创建与 `package.json` 版本一致的 Git 标签并推送到远程仓库：
+
+```bash
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+发布工作流会从 lockfile 安装依赖，执行 `npm run check`，检查 npm 包内容，校验标签版本，并通过 npm Trusted Publishing 和 provenance 发布到 npm。首次发布前，需要在 npm 包设置中为本仓库的 `Publish` 工作流配置可信发布者。
 
 ## 许可证
 

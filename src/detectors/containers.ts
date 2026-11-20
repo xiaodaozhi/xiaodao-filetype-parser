@@ -12,6 +12,14 @@ interface ZipDirectory {
   size: number;
 }
 
+interface ZipEntry {
+  name: string;
+  compressionMethod: number;
+  compressedSize: number;
+  uncompressedSize: number;
+  localHeaderOffset: number;
+}
+
 function findEndOfCentralDirectory(source: ByteSource): ZipDirectory | null {
   const tailOffset = Math.max(0, source.size - 128 * 1024);
   const tail = source.read(tailOffset, source.size - tailOffset);
@@ -33,30 +41,51 @@ function findEndOfCentralDirectory(source: ByteSource): ZipDirectory | null {
   return null;
 }
 
-function readZipNames(directory: Buffer): string[] | null {
-  const names: string[] = [];
+function readZipEntries(directory: Buffer): ZipEntry[] | null {
+  const entries: ZipEntry[] = [];
   let offset = 0;
   while (offset + 46 <= directory.length) {
     if (directory.readUInt32LE(offset) !== ZIP_CENTRAL_FILE_SIGNATURE) break;
-    const flags = directory.readUInt16LE(offset + 8);
+    const compressionMethod = directory.readUInt16LE(offset + 10);
+    const compressedSize = directory.readUInt32LE(offset + 20);
+    const uncompressedSize = directory.readUInt32LE(offset + 24);
     const nameLength = directory.readUInt16LE(offset + 28);
     const extraLength = directory.readUInt16LE(offset + 30);
     const commentLength = directory.readUInt16LE(offset + 32);
     const end = offset + 46 + nameLength + extraLength + commentLength;
     if (end > directory.length) return null;
     const nameBytes = directory.subarray(offset + 46, offset + 46 + nameLength);
-    const name = (flags & 0x800) !== 0 ? nameBytes.toString('utf8') : nameBytes.toString('utf8');
-    names.push(name);
+    entries.push({
+      name: nameBytes.toString('utf8'),
+      compressionMethod,
+      compressedSize,
+      uncompressedSize,
+      localHeaderOffset: directory.readUInt32LE(offset + 42),
+    });
     offset = end;
   }
-  return names.length === 0 || offset === directory.length || directory.readUInt32LE(offset) !== ZIP_CENTRAL_FILE_SIGNATURE
-    ? names
+  return entries.length === 0 || offset === directory.length || directory.readUInt32LE(offset) !== ZIP_CENTRAL_FILE_SIGNATURE
+    ? entries
     : null;
 }
 
-function zipRefinement(names: readonly string[]): { type: Candidate['type']; ruleId: string; detail: string } | null {
-  const normalized = names.map(name => name.replace(/\\/g, '/'));
+function readStoredZipEntry(source: ByteSource, entry: ZipEntry): Buffer | null {
+  if (entry.compressionMethod !== 0 || entry.compressedSize !== entry.uncompressedSize || entry.uncompressedSize > 4096) return null;
+  const localHeader = source.read(entry.localHeaderOffset, 30);
+  if (localHeader.length < 30 || localHeader.readUInt32LE(0) !== 0x04034b50) return null;
+  const nameLength = localHeader.readUInt16LE(26);
+  const extraLength = localHeader.readUInt16LE(28);
+  const dataOffset = entry.localHeaderOffset + 30 + nameLength + extraLength;
+  const data = source.read(dataOffset, entry.compressedSize);
+  return data.length === entry.compressedSize ? data : null;
+}
+
+function zipRefinement(source: ByteSource, entries: readonly ZipEntry[]): { type: Candidate['type']; ruleId: string; detail: string } | null {
+  const normalizedEntries = entries.map(entry => ({ ...entry, name: entry.name.replace(/\\/g, '/') }));
+  const normalized = normalizedEntries.map(entry => entry.name);
   const set = new Set(normalized);
+  const mimetypeEntry = normalizedEntries.find(entry => entry.name === 'mimetype');
+  const mimetype = mimetypeEntry ? readStoredZipEntry(source, mimetypeEntry)?.toString('utf8').trim() : null;
   if (set.has('AndroidManifest.xml') || set.has('classes.dex')) return { type: 'apk', ruleId: 'zip-apk-entries', detail: 'ZIP entries identify an Android package' };
   if (set.has('[Content_Types].xml') && normalized.some(name => name === 'word/document.xml' || name.startsWith('word/'))) {
     return { type: 'docx', ruleId: 'zip-docx-entries', detail: 'ZIP entries identify an Office Open XML Word document' };
@@ -72,6 +101,15 @@ function zipRefinement(names: readonly string[]): { type: Candidate['type']; rul
   }
   if (set.has('META-INF/MANIFEST.MF') && normalized.some(name => name.endsWith('.class'))) {
     return { type: 'jar', ruleId: 'zip-jar-entries', detail: 'ZIP entries identify a Java archive' };
+  }
+  if (mimetype === 'application/vnd.oasis.opendocument.text') {
+    return { type: 'odt', ruleId: 'zip-odt-mimetype', detail: 'The stored mimetype entry identifies an OpenDocument text file' };
+  }
+  if (mimetype === 'application/vnd.oasis.opendocument.spreadsheet') {
+    return { type: 'ods', ruleId: 'zip-ods-mimetype', detail: 'The stored mimetype entry identifies an OpenDocument spreadsheet' };
+  }
+  if (mimetype === 'application/vnd.oasis.opendocument.presentation') {
+    return { type: 'odp', ruleId: 'zip-odp-mimetype', detail: 'The stored mimetype entry identifies an OpenDocument presentation' };
   }
   if (normalized.some(name => name.startsWith('Payload/')) && normalized.some(name => name.endsWith('.app/Info.plist'))) {
     return { type: 'ipa', ruleId: 'zip-ipa-entries', detail: 'ZIP entries identify an iOS application package' };
@@ -97,8 +135,8 @@ function zipContainer(source: ByteSource, base: Candidate): Candidate {
   }
 
   const directoryData = source.read(directory.offset, directory.size);
-  const names = readZipNames(directoryData);
-  if (!names) {
+  const entries = readZipEntries(directoryData);
+  if (!entries) {
     const diagnostic: DetectionDiagnostic = {
       code: 'container-refinement-skipped',
       message: 'ZIP central directory is truncated or malformed.',
@@ -110,11 +148,11 @@ function zipContainer(source: ByteSource, base: Candidate): Candidate {
     };
   }
 
-  const refined = zipRefinement(names);
+  const refined = zipRefinement(source, entries);
   if (!refined) {
     return {
       ...base,
-      container: { kind: 'zip', refinedType: null, complete: true, entryCount: names.length },
+      container: { kind: 'zip', refinedType: null, complete: true, entryCount: entries.length },
     };
   }
   const refinedCandidate = makeCandidate(
@@ -125,7 +163,7 @@ function zipContainer(source: ByteSource, base: Candidate): Candidate {
     refined.ruleId,
     refined.detail,
     null,
-    { container: { kind: 'zip', refinedType: refined.type, complete: true, entryCount: names.length } },
+    { container: { kind: 'zip', refinedType: refined.type, complete: true, entryCount: entries.length } },
   );
   return { ...refinedCandidate, signals: [base.signal, refinedCandidate.signal] };
 }
