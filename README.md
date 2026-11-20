@@ -134,7 +134,7 @@ git tag v0.1.1
 git push origin v0.1.1
 ```
 
-The publish workflow installs from the lockfile, runs `npm run check`, verifies the package contents, checks the tag version, and publishes to npm with trusted publishing and provenance. Configure the npm package's trusted publisher for this repository and the `Publish` workflow before pushing a release tag.
+The publish workflow installs from the lockfile, runs `npm run check`, verifies the package contents, checks the tag version, and publishes to npm through GitHub OIDC and npm Trusted Publishing without a long-lived npm token. Configure the package's trusted publisher for repository `xiaodaozhi/xiaodao-filetype-parser` and workflow `Publish` before releasing. npm requires the package to exist before its trusted publisher connection can be configured; provenance is generated automatically when npm's public-repository eligibility requirements are met.
 
 ## License
 

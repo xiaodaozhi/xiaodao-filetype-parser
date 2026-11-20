@@ -130,7 +130,7 @@ git tag v0.1.1
 git push origin v0.1.1
 ```
 
-发布工作流会从 lockfile 安装依赖，执行 `npm run check`，检查 npm 包内容，校验标签版本，并通过 npm Trusted Publishing 和 provenance 发布到 npm。首次发布前，需要在 npm 包设置中为本仓库的 `Publish` 工作流配置可信发布者。
+发布工作流会从 lockfile 安装依赖，执行 `npm run check`，检查 npm 包内容，校验标签版本，并通过 GitHub OIDC 和 npm Trusted Publishing 发布到 npm，不保存长期 npm token。首次发布前，需要在 npm 包设置中为 `xiaodaozhi/xiaodao-filetype-parser` 仓库的 `Publish` 工作流配置可信发布者；npm 要求包先存在，才能配置 Trusted Publisher。满足 npm 的公开仓库条件时，provenance 会由 Trusted Publishing 自动生成。
 
 ## 许可证
 
