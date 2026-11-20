@@ -4,7 +4,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![License](https://img.shields.io/npm/l/xiaodao-filetype-parser)](LICENSE)
 
-English | [简体中文](README.ZH.md)
+English | [简体中文](README.zh-CN.md)
 
 `xiaodao-filetype-parser` identifies files from their content. It is a pure TypeScript ESM package for Node.js and has no runtime dependency on `libmagic`, native DLLs, external commands, or decompression tools.
 

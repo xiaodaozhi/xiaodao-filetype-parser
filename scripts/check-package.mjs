@@ -32,11 +32,11 @@ const packageReport = Array.isArray(report) ? report[0] : report[packageJson.nam
 const files = Array.isArray(packageReport?.files) ? packageReport.files.map(file => file.path) : [];
 const allowed = file => file === 'LICENSE'
   || file === 'README.md'
-  || file === 'README.ZH.md'
+  || file === 'README.zh-CN.md'
   || file === 'package.json'
   || file.startsWith('dist/');
 const unexpected = files.filter(file => !allowed(file));
-const required = ['LICENSE', 'README.md', 'README.ZH.md', 'package.json', 'dist/index.js', 'dist/index.d.ts'];
+const required = ['LICENSE', 'README.md', 'README.zh-CN.md', 'package.json', 'dist/index.js', 'dist/index.d.ts'];
 const missing = required.filter(file => !files.includes(file));
 
 if (packageReport?.name !== packageJson.name || packageReport?.version !== packageJson.version) {
