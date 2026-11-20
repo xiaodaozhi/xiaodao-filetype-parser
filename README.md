@@ -10,6 +10,8 @@ English | [简体中文](README.ZH.md)
 
 The detector returns a structured result with a stable type identifier, MIME type, extensions, category, encoding, confidence, authority, explainability signals, and bounded-read diagnostics.
 
+This makes the package suitable for upload validation, attachment processing, and file scanning workflows.
+
 ## Installation
 
 ```bash
@@ -35,8 +37,8 @@ import fs from 'node:fs/promises';
 const buffer = await fs.readFile('report.pdf');
 const fromBuffer = detect(buffer);
 
-console.log(fromBuffer.type);       // 'pdf'
-console.log(fromBuffer.mimeType);   // 'application/pdf'
+console.log(fromBuffer.type);          // 'pdf'
+console.log(fromBuffer.mimeType);      // 'application/pdf'
 console.log(fromBuffer.authoritative); // true
 
 const fromPath = await detectFile('report.pdf');

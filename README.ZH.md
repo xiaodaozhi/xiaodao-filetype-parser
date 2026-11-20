@@ -155,7 +155,7 @@ git push origin v0.1.1
 
 每次发布都应使用新版本，npm 不允许覆盖已有版本。创建匹配的标签前，请同步更新 `package.json` 和 `package-lock.json`。满足 npm 的公开仓库条件时，provenance 会自动生成。首次创建包和发布平台的要求，请参阅 [npm Trusted Publishing 文档](https://docs.npmjs.com/trusted-publishers)。
 
-独立的 **GitHub Packages and Release** 工作流也会在推送版本标签时运行。它检出对应标签、校验版本、构建并测试组件，然后使用具有 `packages: write` 权限的工作流 `GITHUB_TOKEN` 发布 `@xiaodaozhi/xiaodao-filetype-parser`。随后在干净的消费目录中安装已发布包，用真实格式样本验证 ESM API。验证成功后会创建对应的 GitHub Release，包含自动生成的发布说明、无作用域和有作用域的两个 `.tgz` 安装包，以及 `SHA256SUMS`。预发布版本会创建为 prerelease。
+独立的 **GitHub Packages 与 Release** 工作流也会在推送版本标签时运行。它检出对应标签、校验版本、构建并测试组件，然后使用具有 `packages: write` 权限的工作流 `GITHUB_TOKEN` 发布 `@xiaodaozhi/xiaodao-filetype-parser`。随后在干净的消费目录中安装已发布包，用真实格式样本验证 ESM API。验证成功后会创建对应的 GitHub Release，包含自动生成的发布说明、无作用域和有作用域的两个 `.tgz` 安装包，以及 `SHA256SUMS`。预发布版本会创建为 prerelease。
 
 如需为已有标签补发 GitHub Packages 并创建 Release，可从 `main` 手动运行工作流并传入 `tag`，无需重新发布到 npmjs.org：
 
